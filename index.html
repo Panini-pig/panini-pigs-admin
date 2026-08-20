@@ -1,0 +1,752 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>抖音导出收费管理后台</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+      margin: 0 auto;
+      max-width: 920px;
+      padding: 16px;
+      background: #f3f5f8;
+      color: #222;
+    }
+    h1 {
+      text-align: center;
+      font-size: 26px;
+      margin: 18px 0 8px;
+      font-weight: 700;
+    }
+    .subtitle {
+      text-align: center;
+      color: #777;
+      font-size: 13px;
+      margin: 0 0 18px;
+    }
+    .nav {
+      display: flex;
+      flex-wrap: nowrap;
+      justify-content: center;
+      gap: 6px;
+      margin: 12px 0 24px;
+    }
+    .nav-btn {
+      flex: 1 1 0;
+      min-width: 0;
+      white-space: nowrap;
+      border: 1px solid #d8dde5;
+      background: #fff;
+      color: #333;
+      border-radius: 14px;
+      padding: 9px 8px;
+      font-size: 13px;
+      text-align: center;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(20, 30, 50, 0.05);
+      transition: all 0.15s ease;
+    }
+    .nav-btn:hover { border-color: #1f9d57; color: #1f9d57; }
+    .nav-btn.active {
+      background: #1f9d57;
+      border-color: #1f9d57;
+      color: #fff;
+      box-shadow: 0 3px 10px rgba(31, 157, 87, 0.25);
+    }
+    .panel, .page {
+      background: #fff;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(20, 30, 50, 0.06);
+    }
+    .page { display: none; }
+    .page.active { display: block; }
+    h2 { font-size: 17px; margin: 0 0 14px; }
+    label { display: block; font-size: 13px; color: #555; margin: 10px 0 4px; }
+    input, select, button {
+      font-size: 15px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #ccd3dc;
+      background: #fff;
+      color: #222;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    input:focus, select:focus { outline: 2px solid rgba(31, 157, 87, 0.25); border-color: #1f9d57; }
+    button {
+      cursor: pointer;
+      background: #1f9d57;
+      color: #fff;
+      border: none;
+      width: auto;
+      min-width: 90px;
+      margin-top: 10px;
+      transition: background 0.15s ease;
+    }
+    button:hover { background: #178548; }
+    button.secondary { background: #eceff3; color: #333; }
+    button.secondary:hover { background: #dfe4ea; }
+    button.copy-btn {
+      width: auto;
+      min-width: 34px;
+      padding: 3px 5px;
+      font-size: 11px;
+      line-height: 1.2;
+      margin-left: 4px;
+      margin-top: 0;
+      background: #eef7f1;
+      color: #1f9d57;
+      border: 1px solid #b9dfc8;
+    }
+    button.copy-btn:hover { background: #d9efe2; }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: flex-end;
+    }
+    .row > div { flex: 1 1 160px; min-width: 140px; }
+    .result {
+      background: #f7faf8;
+      border: 1px solid #dbe8e0;
+      border-radius: 10px;
+      padding: 14px;
+      margin-top: 14px;
+      white-space: pre-line;
+      line-height: 1.9;
+      word-break: break-all;
+    }
+    .msg { margin-top: 12px; min-height: 20px; white-space: pre-wrap; word-break: break-word; }
+    .ok { color: #1f9d57; }
+    .err { color: #d93025; }
+    .table-wrap { overflow-x: auto; margin-top: 14px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 820px; }
+    th:first-child, td:first-child { white-space: nowrap; }
+    th, td { border: 1px solid #e3e7ec; padding: 8px 10px; text-align: left; vertical-align: middle; }
+    th { background: #f6f8fa; white-space: nowrap; }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 8px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .badge.unused { background: #eef0f3; color: #777; }
+    .badge.active { background: #e8f7ee; color: #1f9d57; }
+    .badge.used { background: #e7f0fb; color: #2d6fc4; }
+    .badge.revoked { background: #fdecec; color: #c9302c; }
+    .badge.expired { background: #fdf3e0; color: #b7791f; }
+    .badge.expired_unused { background: #eef0f3; color: #777; }
+    .filter-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .filter-bar > div { width: 100%; }
+    .pagination {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .pagination button {
+      width: auto;
+      min-width: 58px;
+      padding: 8px 10px;
+      font-size: 13px;
+      margin-top: 0;
+    }
+    .pagination button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .pagination input {
+      width: 64px;
+      padding: 8px;
+      text-align: center;
+    }
+    .page-info {
+      font-size: 13px;
+      color: #555;
+      white-space: nowrap;
+    }
+    .empty { color: #888; padding: 20px; text-align: center; }
+    .theme-toggle {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      z-index: 20;
+      width: auto;
+      min-width: 88px;
+      padding: 8px 12px;
+      font-size: 13px;
+      border-radius: 12px;
+      background: #fff;
+      color: #333;
+      border: 1px solid #d8dde5;
+      box-shadow: 0 2px 8px rgba(20, 30, 50, 0.12);
+    }
+    tbody tr:nth-child(even) td { background: #f7f8fa; }
+    body[data-theme="dark"] {
+      background: #0f1115;
+      color: #e6e8ee;
+    }
+    body[data-theme="dark"] .theme-toggle {
+      background: #1c2028;
+      color: #d5d9e2;
+      border-color: #333a46;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+    body[data-theme="dark"] .subtitle { color: #9aa2b0; }
+    body[data-theme="dark"] .panel,
+    body[data-theme="dark"] .page {
+      background: #171a21;
+      border: 1px solid #262b35;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+    }
+    body[data-theme="dark"] h2 { color: #e6e8ee; }
+    body[data-theme="dark"] label { color: #9aa2b0; }
+    body[data-theme="dark"] input,
+    body[data-theme="dark"] select {
+      background: #0f1115;
+      color: #e6e8ee;
+      border-color: #333a46;
+    }
+    body[data-theme="dark"] button { background: #1a7a45; color: #fff; }
+    body[data-theme="dark"] button:hover { background: #1f8a4c; }
+    body[data-theme="dark"] button.secondary {
+      background: #242a34;
+      color: #d5d9e2;
+      border: 1px solid #39424f;
+    }
+    body[data-theme="dark"] button.secondary:hover { background: #2d3541; }
+    body[data-theme="dark"] .nav-btn {
+      background: #1c2028;
+      color: #d5d9e2;
+      border-color: #333a46;
+    }
+    body[data-theme="dark"] .nav-btn:hover { color: #6fe0a0; border-color: #1f9d57; }
+    body[data-theme="dark"] .nav-btn.active {
+      background: #1a7a45;
+      border-color: #1a7a45;
+      color: #fff;
+    }
+    body[data-theme="dark"] .result {
+      background: #141821;
+      border-color: #2b323e;
+      color: #e6e8ee;
+    }
+    body[data-theme="dark"] .msg.ok { color: #6fe0a0; }
+    body[data-theme="dark"] .msg.err { color: #ff6b6b; }
+    body[data-theme="dark"] .empty { color: #9aa2b0; }
+    body[data-theme="dark"] th {
+      background: #20252e;
+      color: #e6e8ee;
+    }
+    body[data-theme="dark"] th,
+    body[data-theme="dark"] td { border-color: #2a313c; }
+    body[data-theme="dark"] tbody tr:nth-child(odd) td { background: #171a21; }
+    body[data-theme="dark"] tbody tr:nth-child(even) td { background: #1a1f27; }
+    body[data-theme="dark"] .badge.unused { background: #232933; color: #aab2bf; }
+    body[data-theme="dark"] .badge.active { background: #173725; color: #6fe0a0; }
+    body[data-theme="dark"] .badge.used { background: #1b2c45; color: #7fb5ff; }
+    body[data-theme="dark"] .badge.revoked { background: #3a1f22; color: #ff8a8a; }
+    body[data-theme="dark"] .badge.expired { background: #3a2f16; color: #e2b23c; }
+    body[data-theme="dark"] .badge.expired_unused { background: #232933; color: #aab2bf; }
+    body[data-theme="dark"] .copy-btn {
+      background: #173725;
+      color: #6fe0a0;
+      border-color: #2c5b40;
+    }
+    body[data-theme="dark"] .copy-btn:hover { background: #1e4830; }
+    body[data-theme="dark"] .page-info { color: #9aa2b0; }
+    @media (max-width: 560px) {
+      h1 { font-size: 22px; }
+      .nav { gap: 4px; }
+      .nav-btn { padding: 8px 4px; font-size: 12px; }
+      .theme-toggle { top: 8px; right: 8px; min-width: 72px; padding: 7px 9px; }
+      body { padding-top: 12px; }
+    }
+  </style>
+</head>
+<body data-theme="dark">
+  <button id="themeToggle" class="theme-toggle" onclick="toggleTheme()">白天模式</button>
+  <h1>抖音导出收费管理后台</h1>
+  <p class="subtitle">激活码生成 · 注销 · 测试 · 查询</p>
+
+  <div id="login" class="panel">
+    <h2>管理员登录</h2>
+    <label for="adminEmail">Supabase 登录邮箱</label>
+    <input id="adminEmail" type="email" autocomplete="username" placeholder="邮箱">
+    <label for="adminPassword">Supabase 登录密码</label>
+    <input id="adminPassword" type="password" autocomplete="current-password" placeholder="密码">
+    <button onclick="signIn()">安全登录</button>
+    <div id="loginMsg" class="msg"></div>
+  </div>
+
+  <div id="main" hidden>
+    <div class="nav">
+      <button class="nav-btn active" data-page="create" onclick="showPage('create')">生成</button>
+      <button class="nav-btn" data-page="revoke" onclick="showPage('revoke')">注销</button>
+      <button class="nav-btn" data-page="test" onclick="showPage('test')">测试</button>
+      <button class="nav-btn" data-page="list" onclick="showPage('list')">查询</button>
+    </div>
+    <button type="button" class="secondary" onclick="signOut()">退出登录</button>
+
+    <section id="page-create" class="page active">
+      <h2>生成激活码</h2>
+      <label>订单号（可选）</label>
+      <input id="orderNo" placeholder="例如 20260811-001">
+      <label>收款金额</label>
+      <input id="amount" type="number" step="0.01" placeholder="例如 19.9">
+      <label>首次联系平台</label>
+      <select id="contactPlatform">
+        <option value="哔哩哔哩">哔哩哔哩</option>
+        <option value="闲鱼">闲鱼</option>
+        <option value="抖音">抖音</option>
+        <option value="快手">快手</option>
+        <option value="微信">微信</option>
+        <option value="QQ">QQ</option>
+        <option value="其他">其他</option>
+      </select>
+      <button onclick="createLicense()">生成激活码</button>
+      <div id="createResult" class="result" hidden></div>
+      <div id="createMsg" class="msg"></div>
+    </section>
+
+    <section id="page-revoke" class="page">
+      <h2>注销激活码</h2>
+      <label>激活码</label>
+      <input id="revokeKey" placeholder="输入激活码，例如 DY-XXXX-XXXX-XXXX">
+      <button onclick="revokeLicense()" class="secondary">注销激活码</button>
+      <div id="revokeMsg" class="msg"></div>
+    </section>
+
+    <section id="page-test" class="page">
+      <h2>测试激活码</h2>
+      <label>激活码</label>
+      <input id="testKey" placeholder="输入要测试的激活码">
+      <label>设备 ID</label>
+      <input id="testDevice" value="test-device" placeholder="设备 ID">
+      <label>测试抖音号</label>
+      <input id="testDouyin" value="test-douyin-uid" placeholder="测试抖音号">
+      <div class="row">
+        <div><button onclick="testActivate()">1. 激活</button></div>
+        <div><button id="testValidateBtn" onclick="testValidate()" class="secondary" disabled>2. 校验</button></div>
+        <div><button id="testConsumeBtn" onclick="testConsume()" class="secondary" disabled>3. 消耗 1 次</button></div>
+      </div>
+      <div id="testMsg" class="msg"></div>
+    </section>
+
+    <section id="page-list" class="page">
+      <h2>激活码列表</h2>
+      <div class="filter-bar">
+        <div>
+          <label>搜索</label>
+          <input id="filterSearch" placeholder="输入激活码搜索" oninput="filterChanged()">
+        </div>
+        <div>
+          <label>选择查询类型</label>
+          <select id="filterStatus" onchange="filterChanged()">
+            <option value="all">全部</option>
+            <option value="unused">未激活</option>
+            <option value="expired_unused">已过期未激活</option>
+            <option value="active">已激活可用</option>
+            <option value="used">已使用</option>
+            <option value="expired">已到期</option>
+            <option value="revoked">已注销</option>
+          </select>
+        </div>
+        <div>
+          <label>开始日期</label>
+          <input id="filterStart" type="datetime-local" onchange="filterChanged()">
+        </div>
+        <div>
+          <label>结束日期</label>
+          <input id="filterEnd" type="datetime-local" onchange="filterChanged()">
+        </div>
+        <div>
+          <button onclick="resetAndLoad()">刷新列表</button>
+        </div>
+      </div>
+      <div id="licenseList" class="table-wrap"></div>
+      <div id="pagination" class="pagination"></div>
+      <div id="listMsg" class="msg"></div>
+    </section>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://zarulafajzgvxjxebwyt.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphcnVsYWZhanpndnhqeGVid3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYzNjA1NTQsImV4cCI6MjEwMTkzNjU1NH0.kdQcKy-FuLIooJ1Q6js0AmN2yClRRpNjrxnZwDQTKTA";
+    let accessToken = "";
+    let testToken = "";
+    let testDevice = "test-device";
+    let currentPage = 1;
+    const pageSize = 20;
+    let totalPages = 1;
+
+    function show(el, msg, cls) {
+      const node = document.getElementById(el);
+      node.textContent = msg || "";
+      node.className = "msg " + (cls || "");
+    }
+
+    function showPage(id) {
+      document.querySelectorAll(".nav-btn").forEach((b) => {
+        b.classList.toggle("active", b.dataset.page === id);
+      });
+      document.querySelectorAll(".page").forEach((p) => {
+        p.classList.toggle("active", p.id === "page-" + id);
+      });
+      if (id === "list") loadLicenses();
+    }
+
+    function api(name, body) {
+      if (!accessToken) return Promise.reject(new Error("请先登录"));
+      return fetch(`${SUPABASE_URL}/functions/v1/${name}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${accessToken}`,
+          "apikey": SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify(body || {}),
+      }).then(async (r) => {
+        const d = await r.json();
+        if (!r.ok || !d.ok) throw new Error(d.error || `HTTP ${r.status}`);
+        return d;
+      });
+    }
+
+    async function signIn() {
+      const email = document.getElementById("adminEmail").value.trim();
+      const password = document.getElementById("adminPassword").value;
+      if (!email || !password) {
+        show("loginMsg", "请输入登录邮箱和密码", "err");
+        return;
+      }
+      show("loginMsg", "登录中...");
+      try {
+        const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY },
+          body: JSON.stringify({ email, password }),
+        });
+        const session = await response.json();
+        if (!response.ok || !session.access_token) throw new Error("login failed");
+        accessToken = session.access_token;
+        document.getElementById("login").hidden = true;
+        document.getElementById("main").hidden = false;
+        document.getElementById("adminPassword").value = "";
+        showPage("create");
+      } catch {
+        accessToken = "";
+        show("loginMsg", "登录失败，请检查账户、密码和管理员权限", "err");
+      }
+    }
+
+    function signOut() {
+      accessToken = "";
+      document.getElementById("main").hidden = true;
+      document.getElementById("login").hidden = false;
+      document.getElementById("adminPassword").value = "";
+      show("loginMsg", "已退出登录", "ok");
+    }
+
+    function formatBeijing(value) {
+      if (!value) return "-";
+      const d = new Date(value);
+      if (isNaN(d.getTime())) return "-";
+      return d.toLocaleString("zh-CN", {
+        timeZone: "Asia/Shanghai",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }).replace(/\//g, "-");
+    }
+
+    function escapeHtml(v) {
+      return String(v).replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+      }[c]));
+    }
+
+    function accountDisplay(x) {
+      const session = Array.isArray(x.export_sessions)
+        ? x.export_sessions.find((s) => s && s.douyin_uid)
+        : null;
+      const nickname = x.douyin_nickname || "";
+      const uniqueId = x.douyin_unique_id || "";
+      const uid = x.douyin_uid || (session && session.douyin_uid) || "";
+      if (nickname) {
+        const suffix = uniqueId || uid || "-";
+        return `${escapeHtml(nickname)} (${escapeHtml(suffix)})`;
+      }
+      return escapeHtml((uid || "-").slice(0, 14));
+    }
+
+    function copyKey(value, btn) {
+      const done = () => {
+        btn.textContent = "已复制";
+        setTimeout(() => { btn.textContent = "复制"; }, 1500);
+      };
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(value).then(done).catch(() => fallbackCopy(value, done));
+      } else {
+        fallbackCopy(value, done);
+      }
+    }
+
+    function fallbackCopy(value, done) {
+      const ta = document.createElement("textarea");
+      ta.value = value;
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+        done();
+      } catch {}
+      ta.remove();
+    }
+
+    async function createLicense() {
+      show("createMsg", "生成中...");
+      document.getElementById("createResult").hidden = true;
+      try {
+        const d = await api("create-license", {
+          order_no: document.getElementById("orderNo").value.trim(),
+          amount: document.getElementById("amount").value,
+          contact_platform: document.getElementById("contactPlatform").value,
+        });
+        document.getElementById("createResult").hidden = false;
+        document.getElementById("createResult").innerHTML = `
+          <div>激活码：<strong>${escapeHtml(d.key)}</strong>
+            <button class="copy-btn" onclick="copyKey('${escapeHtml(d.key)}', this)">复制</button>
+          </div>
+          <div>订单号：${escapeHtml(document.getElementById("orderNo").value.trim() || "-")}</div>
+          <div>首次联系平台：${escapeHtml(document.getElementById("contactPlatform").value || "-")}</div>
+          <div>12小时内有效：${formatBeijing(d.expires_at)}</div>
+        `;
+        show("createMsg", "生成成功", "ok");
+      } catch (e) {
+        show("createMsg", String(e), "err");
+      }
+    }
+
+    async function revokeLicense() {
+      show("revokeMsg", "注销中...");
+      const key = document.getElementById("revokeKey").value.trim();
+      if (!key) { show("revokeMsg", "请输入激活码", "err"); return; }
+      try {
+        await api("revoke-key", { key });
+        show("revokeMsg", "注销成功", "ok");
+        document.getElementById("revokeKey").value = "";
+      } catch (e) {
+        show("revokeMsg", String(e), "err");
+      }
+    }
+
+    async function testActivate() {
+      show("testMsg", "激活中...");
+      try {
+        testDevice = document.getElementById("testDevice").value.trim() || "test-device";
+        const testDouyin = document.getElementById("testDouyin").value.trim() || "test-douyin-uid";
+        const d = await api("activate-key", {
+          key: document.getElementById("testKey").value.trim(),
+          device_id: testDevice,
+          douyin_uid: testDouyin,
+        });
+        testToken = d.token;
+        show(
+          "testMsg",
+          `激活成功\nToken：${testToken}\n剩余次数：${d.max_exports - d.exports_used}\n到期时间：${formatBeijing(d.export_deadline)}`,
+          "ok"
+        );
+        document.getElementById("testValidateBtn").disabled = false;
+        document.getElementById("testConsumeBtn").disabled = false;
+      } catch (e) {
+        show("testMsg", String(e), "err");
+      }
+    }
+
+    async function testValidate() {
+      show("testMsg", "校验中...");
+      try {
+        const d = await api("validate-token", {
+          token: testToken,
+          device_id: testDevice,
+          douyin_uid: document.getElementById("testDouyin").value.trim() || "test-douyin-uid",
+        });
+        show("testMsg", `校验成功，剩余次数：${d.remaining}`, "ok");
+      } catch (e) {
+        show("testMsg", String(e), "err");
+      }
+    }
+
+    async function testConsume() {
+      show("testMsg", "消耗中...");
+      try {
+        const d = await api("consume-export", {
+          token: testToken,
+          device_id: testDevice,
+          douyin_uid: document.getElementById("testDouyin").value.trim() || "test-douyin-uid",
+        });
+        show("testMsg", `已消耗 1 次，剩余次数：${d.remaining}`, "ok");
+      } catch (e) {
+        show("testMsg", String(e), "err");
+      }
+    }
+
+    async function loadLicenses() {
+      const box = document.getElementById("licenseList");
+      document.getElementById("pagination").innerHTML = "";
+      show("listMsg", "加载中...");
+      box.innerHTML = "";
+      try {
+        const d = await api("list-licenses");
+        const status = document.getElementById("filterStatus").value;
+        const search = document.getElementById("filterSearch").value.trim().toLowerCase();
+        const start = document.getElementById("filterStart").value;
+        const end = document.getElementById("filterEnd").value;
+
+        let rows = d.licenses || [];
+        if (status !== "all") rows = rows.filter((x) => x.status === status);
+        if (search) rows = rows.filter((x) => (`dy-****-****-${x.key_hint || ""}`).toLowerCase().includes(search));
+        if (start) {
+          const t = new Date(start).getTime();
+          rows = rows.filter((x) => new Date(x.created_at).getTime() >= t);
+        }
+        if (end) {
+          const t = new Date(end).getTime();
+          rows = rows.filter((x) => new Date(x.created_at).getTime() <= t);
+        }
+
+        totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+        if (currentPage > totalPages) currentPage = totalPages;
+        const startIdx = (currentPage - 1) * pageSize;
+        const pageRows = rows.slice(startIdx, startIdx + pageSize);
+
+        show("listMsg", rows.length ? `共 ${rows.length} 条，第 ${currentPage} / ${totalPages} 页` : "");
+        if (!pageRows.length) {
+          box.innerHTML = '<div class="empty">暂无匹配的激活码</div>';
+          renderPagination(rows.length);
+          return;
+        }
+
+        let html = "<table><tr><th>激活码</th><th>平台</th><th>订单</th><th>状态</th><th>设备</th><th>抖音账号</th><th>次数</th><th>创建</th><th>到期</th></tr>";
+        for (const x of pageRows) {
+          html += `<tr>
+            <td>${x.key_hint ? `DY-****-****-${escapeHtml(x.key_hint)}` : "-"}</td>
+            <td>${escapeHtml(x.contact_platform || "-")}</td>
+            <td>${escapeHtml(x.order_no || "-")}</td>
+            <td>${statusBadge(x.status)}</td>
+            <td>${escapeHtml((x.device_id || "-").slice(0, 14))}</td>
+            <td>${accountDisplay(x)}</td>
+            <td>${x.exports_used}/${x.max_exports}</td>
+            <td>${formatBeijing(x.created_at)}</td>
+            <td>${formatBeijing(x.expires_at)}</td>
+          </tr>`;
+        }
+        html += "</table>";
+        box.innerHTML = html;
+        renderPagination(rows.length);
+      } catch (e) {
+        document.getElementById("pagination").innerHTML = "";
+        show("listMsg", String(e), "err");
+      }
+    }
+
+    function filterChanged() {
+      currentPage = 1;
+      loadLicenses();
+    }
+
+    function resetAndLoad() {
+      currentPage = 1;
+      loadLicenses();
+    }
+
+    function goPage(page) {
+      page = Number(page) || 1;
+      if (page < 1) page = 1;
+      if (page > totalPages) page = totalPages;
+      currentPage = page;
+      loadLicenses();
+    }
+
+    function jumpPage() {
+      const input = document.getElementById("pageInput");
+      if (input) goPage(input.value);
+    }
+
+    function renderPagination(total) {
+      const box = document.getElementById("pagination");
+      if (total <= pageSize) {
+        box.innerHTML = "";
+        return;
+      }
+      box.innerHTML = `
+        <button onclick="goPage(1)" ${currentPage === 1 ? "disabled" : ""}>第一页</button>
+        <button onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? "disabled" : ""}>上一页</button>
+        <span class="page-info">第 ${currentPage} / ${totalPages} 页 · 共 ${total} 条</span>
+        <button onclick="goPage(${currentPage + 1})" ${currentPage === totalPages ? "disabled" : ""}>下一页</button>
+        <button onclick="goPage(${totalPages})" ${currentPage === totalPages ? "disabled" : ""}>最后一页</button>
+        <input id="pageInput" type="number" min="1" max="${totalPages}" value="${currentPage}" onkeydown="if(event.key==='Enter')jumpPage()">
+        <button onclick="jumpPage()">跳转</button>
+      `;
+    }
+
+    function statusBadge(status) {
+      const labels = {
+        unused: "未激活",
+        expired_unused: "已过期未激活",
+        active: "已激活可用",
+        used: "已使用",
+        expired: "已到期",
+        revoked: "已注销",
+      };
+      const cls = {
+        unused: "unused",
+        expired_unused: "expired_unused",
+        active: "active",
+        used: "used",
+        expired: "expired",
+        revoked: "revoked",
+      };
+      const label = labels[status] || status;
+      const badgeCls = cls[status] || "expired_unused";
+      return `<span class="badge ${badgeCls}">${escapeHtml(label)}</span>`;
+    }
+
+    function applyTheme(theme) {
+      document.body.dataset.theme = theme;
+      try {
+        localStorage.setItem("theme", theme);
+      } catch {}
+      const btn = document.getElementById("themeToggle");
+      btn.textContent = theme === "dark" ? "白天模式" : "黑夜模式";
+    }
+
+    function toggleTheme() {
+      applyTheme(document.body.dataset.theme === "dark" ? "light" : "dark");
+    }
+
+    try {
+      applyTheme(localStorage.getItem("theme") || "dark");
+    } catch {
+      applyTheme("dark");
+    }
+
+  </script>
+</body>
+</html>

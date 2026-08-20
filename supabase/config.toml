@@ -1,0 +1,12 @@
+project_id = "zarulafajzgvxjxebwyt"
+
+# Admin functions must receive a valid Supabase user JWT. They additionally
+# verify that the signed-in email is listed in the ADMIN_EMAILS secret.
+[functions.create-license]
+verify_jwt = true
+
+[functions.list-licenses]
+verify_jwt = true
+
+[functions.revoke-key]
+verify_jwt = true
