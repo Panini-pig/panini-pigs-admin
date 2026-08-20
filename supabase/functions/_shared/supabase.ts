@@ -34,3 +34,21 @@ export async function getAdminUser(req: Request): Promise<AdminUser | null> {
 export async function requireAdmin(req: Request): Promise<boolean> {
   return Boolean(await getAdminUser(req));
 }
+
+export async function verifyAdminPassword(
+  admin: AdminUser,
+  password: string,
+): Promise<boolean> {
+  const url = Deno.env.get("SUPABASE_URL");
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  if (!url || !anonKey || !password) return false;
+
+  const response = await fetch(`${url}/auth/v1/token?grant_type=password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", apikey: anonKey },
+    body: JSON.stringify({ email: admin.email, password }),
+  });
+  const session = await response.json().catch(() => ({}));
+  const verifiedEmail = String(session?.user?.email || "").toLowerCase();
+  return response.ok && session?.user?.id === admin.id && verifiedEmail === admin.email;
+}
