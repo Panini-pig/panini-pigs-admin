@@ -11,7 +11,9 @@ export function serviceClient() {
   return createClient(url, key);
 }
 
-export async function requireAdmin(req: Request): Promise<boolean> {
+export type AdminUser = { id: string; email: string };
+
+export async function getAdminUser(req: Request): Promise<AdminUser | null> {
   const allowedEmails = (Deno.env.get("ADMIN_EMAILS") || "")
     .split(",")
     .map((email) => email.trim().toLowerCase())
@@ -21,9 +23,14 @@ export async function requireAdmin(req: Request): Promise<boolean> {
     ? authorization.slice("Bearer ".length).trim()
     : "";
 
-  if (!token || allowedEmails.length === 0) return false;
+  if (!token || allowedEmails.length === 0) return null;
 
   const { data, error } = await serviceClient().auth.getUser(token);
   const email = data.user?.email?.toLowerCase();
-  return !error && Boolean(email && allowedEmails.includes(email));
+  if (error || !email || !allowedEmails.includes(email)) return null;
+  return { id: data.user.id, email };
+}
+
+export async function requireAdmin(req: Request): Promise<boolean> {
+  return Boolean(await getAdminUser(req));
 }

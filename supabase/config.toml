@@ -16,3 +16,6 @@ verify_jwt = true
 
 [functions.delete-licenses]
 verify_jwt = true
+
+[functions.current-admin]
+verify_jwt = true

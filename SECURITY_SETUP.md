@@ -7,13 +7,22 @@
 1. 在 Supabase Auth 中创建一个仅供你本人使用的邮箱/密码账户，并确认邮箱。
 2. 在 Supabase Edge Function Secrets 中设置：
 
-   - `ADMIN_EMAILS`：`2778934515@qq.com`；多个邮箱时用英文逗号分隔。
+   - `ADMIN_EMAILS`：`2778934515@qq.com`；多个邮箱时用英文逗号分隔。例如：`2778934515@qq.com,朋友的Supabase登录邮箱`。
    - `ALLOWED_ORIGINS`：`https://admin.panini-pigs.cn`
    - 保留已有的 `SERVICE_ROLE_KEY`；它只能保存在 Supabase Secrets，绝不能放入网页或 GitHub。
 
-3. 在 Supabase SQL Editor 依次执行 `database/007_security_hardening.sql` 与 `database/008_dashboard_and_batch_management.sql`。
-4. 部署 `create-license`、`list-licenses`、`revoke-key`、`activate-key`、`validate-token`、`consume-export`、`dashboard-stats` 和 `delete-licenses` 八个函数。
-5. 在 Cloudflare Zero Trust 为 `admin.panini-pigs.cn` 创建 Access 应用，仅允许你的邮箱登录。
+3. 在 Supabase SQL Editor 依次执行 `database/007_security_hardening.sql`、`database/008_dashboard_and_batch_management.sql` 与 `database/009_admin_profiles.sql`。
+4. 部署 `create-license`、`list-licenses`、`revoke-key`、`activate-key`、`validate-token`、`consume-export`、`dashboard-stats`、`delete-licenses` 和 `current-admin` 九个函数。
+5. 在 Cloudflare Zero Trust 为 `admin.panini-pigs.cn` 创建 Access 应用，并允许每位管理员使用各自的邮箱登录。
+
+## 管理员姓名与共同管理
+
+执行 `database/009_admin_profiles.sql` 后，在 `admin_profiles` 表中维护管理员资料：
+
+- `email`：该管理员在 Supabase Auth 中实际用于登录的邮箱，必须同时出现在 `ADMIN_EMAILS` 白名单中。
+- `display_name`：页面问候语中显示的姓名。例如你的记录填写 `2778934515@qq.com` 与 `顾健炜`；朋友的记录填写朋友自己的登录邮箱与 `汪显昊`。
+
+朋友能够登录但看不到数据时，检查 `ADMIN_EMAILS` 是否已包含朋友的登录邮箱，并确认 Cloudflare Access 也允许该邮箱。
 
 ## 上线前验证
 
