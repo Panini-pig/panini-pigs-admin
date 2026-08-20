@@ -11,8 +11,8 @@
    - `ALLOWED_ORIGINS`：`https://admin.panini-pigs.cn`
    - 保留已有的 `SERVICE_ROLE_KEY`；它只能保存在 Supabase Secrets，绝不能放入网页或 GitHub。
 
-3. 在 Supabase SQL Editor 执行 `database/007_security_hardening.sql`。
-4. 部署 `create-license`、`list-licenses`、`revoke-key`、`activate-key`、`validate-token` 和 `consume-export` 六个函数。
+3. 在 Supabase SQL Editor 依次执行 `database/007_security_hardening.sql` 与 `database/008_dashboard_and_batch_management.sql`。
+4. 部署 `create-license`、`list-licenses`、`revoke-key`、`activate-key`、`validate-token`、`consume-export`、`dashboard-stats` 和 `delete-licenses` 八个函数。
 5. 在 Cloudflare Zero Trust 为 `admin.panini-pigs.cn` 创建 Access 应用，仅允许你的邮箱登录。
 
 ## 上线前验证
@@ -21,6 +21,8 @@
 - 使用不在 `ADMIN_EMAILS` 中的账户登录后，接口必须返回 `401`。
 - 同一个导出 token 并发调用时，导出次数不得超过授权上限。
 - 授权码列表只应显示掩码，例如 `DY-****-****-ABCD`。
+- 工作台统计应正常显示今日成交、累计收入与近七日趋势。
+- 批量删除只能删除未激活的激活码。
 
 ## 旧明文授权码清理
 

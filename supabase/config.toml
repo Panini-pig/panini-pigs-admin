@@ -10,3 +10,9 @@ verify_jwt = true
 
 [functions.revoke-key]
 verify_jwt = true
+
+[functions.dashboard-stats]
+verify_jwt = true
+
+[functions.delete-licenses]
+verify_jwt = true
