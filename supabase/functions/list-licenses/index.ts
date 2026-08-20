@@ -4,14 +4,14 @@ import { requireAdmin, serviceClient } from "../_shared/supabase.ts";
 function effectiveStatus(row) {
   const now = new Date();
   if (row.status === "revoked") return "revoked";
-  if (row.status === "expired") return "expired_unused";
-  if (row.status === "unused") return row.expires_at && new Date(row.expires_at) <= now ? "expired_unused" : "unused";
-  if (row.status === "activated") {
-    if (row.export_deadline && new Date(row.export_deadline) <= now) return "expired";
-    if ((row.exports_used || 0) > 0) return "used";
-    return "active";
-  }
-  return row.status || "unused";
+  const activated = row.status === "activated" || Boolean(row.activated_at);
+  const used = Number(row.exports_used || 0) > 0;
+  const deadline = activated ? row.export_deadline : row.expires_at;
+  const expired = row.status === "expired" || Boolean(deadline && new Date(deadline) <= now);
+
+  if (!activated) return expired ? "inactive_unused_expired" : "inactive_unused_valid";
+  if (!used) return expired ? "active_unused_expired" : "active_unused_valid";
+  return expired ? "active_used_expired" : "active_used_valid";
 }
 
 Deno.serve(async (req) => {
