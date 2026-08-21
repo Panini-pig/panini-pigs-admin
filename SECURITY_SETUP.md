@@ -11,8 +11,8 @@
    - `ALLOWED_ORIGINS`：`https://admin.panini-pigs.cn`
    - 保留已有的 `SERVICE_ROLE_KEY`；它只能保存在 Supabase Secrets，绝不能放入网页或 GitHub。
 
-3. 在 Supabase SQL Editor 依次执行 `database/007_security_hardening.sql`、`database/008_dashboard_and_batch_management.sql` 与 `database/009_admin_profiles.sql`。
-4. 部署 `create-license`、`list-licenses`、`revoke-key`、`activate-key`、`validate-token`、`consume-export`、`dashboard-stats`、`delete-licenses` 和 `current-admin` 九个函数。
+3. 在 Supabase SQL Editor 依次执行 `database/007_security_hardening.sql`、`database/008_dashboard_and_batch_management.sql` 与 `database/009_admin_profiles.sql`，并应用 `supabase/migrations/20260821000000_add_plan_entitlements.sql`（或在已关联项目中执行 `supabase db push`）。
+4. 部署 `create-license`、`list-licenses`、`revoke-key`、`activate-key`、`validate-token`、`consume-export`、`consume-report`、`dashboard-stats`、`delete-licenses` 和 `current-admin` 十个函数。
 5. 在 Cloudflare Zero Trust 为 `admin.panini-pigs.cn` 创建 Access 应用，并允许每位管理员使用各自的邮箱登录。
 
 ## 管理员姓名与共同管理
@@ -29,6 +29,8 @@
 - 未登录时，生成、查询和注销接口必须返回 `401`。
 - 使用不在 `ADMIN_EMAILS` 中的账户登录后，接口必须返回 `401`。
 - 同一个导出 token 并发调用时，导出次数不得超过授权上限。
+- `report` 可不提供抖音 UID 激活；同一 `dataset_fingerprint` 重复调用 `consume-report` 不得重复扣额度，并发调用也不得超额。
+- `bundle` 必须提供抖音 UID 激活，且可分别消耗导出次数与聊天档案额度。
 - 授权码列表只应显示掩码，例如 `DY-****-****-ABCD`。
 - 工作台统计应正常显示今日成交、累计收入与近七日趋势。
 - 批量删除只能删除未激活的激活码。

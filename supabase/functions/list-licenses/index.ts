@@ -5,7 +5,7 @@ function effectiveStatus(row) {
   const now = new Date();
   if (row.status === "revoked") return "revoked";
   const activated = row.status === "activated" || Boolean(row.activated_at);
-  const used = Number(row.exports_used || 0) > 0;
+  const used = Number(row.exports_used || 0) > 0 || Number(row.reports_used || 0) > 0;
   const deadline = activated ? row.export_deadline : row.expires_at;
   const expired = row.status === "expired" || Boolean(deadline && new Date(deadline) <= now);
 
@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
 
   const { data, error } = await serviceClient()
     .from("license_keys")
-    .select("id, key_hint, order_no, amount, contact_platform, status, device_id, douyin_uid, douyin_nickname, douyin_unique_id, created_at, expires_at, activated_at, export_deadline, max_exports, exports_used, export_sessions(douyin_uid)")
+    .select("id, key_hint, order_no, amount, contact_platform, status, device_id, douyin_uid, douyin_nickname, douyin_unique_id, created_at, expires_at, activated_at, export_deadline, plan_code, max_exports, exports_used, report_credits, reports_used, export_sessions(douyin_uid)")
     .order("created_at", { ascending: false })
     .limit(100);
 

@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
   const sessionHash = String(body.session_hash || "").trim();
   const douyinNickname = String(body.douyin_nickname || "").trim();
   const douyinUniqueId = String(body.douyin_unique_id || "").trim();
-  if (!key || !deviceId || !douyinUid || deviceId.length > 256 || douyinUid.length > 256) {
+  if (!key || !deviceId || deviceId.length > 256 || douyinUid.length > 256) {
     return fail("invalid request", 400, req);
   }
 
@@ -25,9 +25,15 @@ Deno.serve(async (req) => {
 
   const now = new Date();
   const expiresAt = new Date(license.expires_at);
+  const planCode = license.plan_code || "export";
+  const requiresDouyin = planCode === "export" || planCode === "bundle";
+  if (requiresDouyin && !douyinUid) return fail("douyin account is required", 400, req);
+  const hasRemainingExport = license.exports_used < license.max_exports;
+  const hasRemainingReport = license.reports_used < license.report_credits;
   const reusable = license.status === "activated" && license.device_id === deviceId &&
-    license.export_deadline && new Date(license.export_deadline) > now &&
-    license.exports_used < license.max_exports && (!license.douyin_uid || license.douyin_uid === douyinUid);
+    (requiresDouyin
+      ? license.export_deadline && new Date(license.export_deadline) > now && hasRemainingExport && (!license.douyin_uid || license.douyin_uid === douyinUid)
+      : hasRemainingReport);
   if (!(license.status === "unused" || reusable) || expiresAt <= now) {
     if (expiresAt <= now) await supabase.from("license_keys").update({ status: "expired" }).eq("id", license.id);
     return fail("activation unavailable", 403, req);
@@ -35,10 +41,10 @@ Deno.serve(async (req) => {
 
   const exportDeadline = license.export_deadline && new Date(license.export_deadline) > now
     ? license.export_deadline
-    : new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
+    : new Date(now.getTime() + (requiresDouyin ? 24 * 60 * 60 * 1000 : 10 * 365 * 24 * 60 * 60 * 1000)).toISOString();
   const { error: updateError } = await supabase.from("license_keys").update({
     status: "activated", device_id: deviceId, activated_at: license.activated_at || now.toISOString(),
-    export_deadline: exportDeadline, douyin_uid: douyinUid,
+    export_deadline: exportDeadline, douyin_uid: douyinUid || license.douyin_uid || null,
     session_hash: sessionHash || license.session_hash || null,
     douyin_nickname: douyinNickname || license.douyin_nickname || null,
     douyin_unique_id: douyinUniqueId || license.douyin_unique_id || null,
@@ -51,11 +57,11 @@ Deno.serve(async (req) => {
   const token = generateToken();
   const { error: sessionError } = await supabase.from("export_sessions").insert({
     license_key_id: license.id, token_hash: await sha256(token), device_id: deviceId,
-    douyin_uid: douyinUid, session_hash: sessionHash || null,
-    expires_at: new Date(Math.min(new Date(exportDeadline).getTime(), now.getTime() + 24 * 60 * 60 * 1000)).toISOString(),
+    douyin_uid: douyinUid || null, session_hash: sessionHash || null,
+    expires_at: new Date(requiresDouyin ? Math.min(new Date(exportDeadline).getTime(), now.getTime() + 24 * 60 * 60 * 1000) : new Date(exportDeadline).getTime()).toISOString(),
   });
   if (sessionError) return fail("activation unavailable", 503, req);
 
   await supabase.from("audit_logs").insert({ action: "activate_key", license_key_id: license.id, device_id: deviceId });
-  return ok({ token, export_deadline: exportDeadline, max_exports: license.max_exports, exports_used: license.exports_used, douyin_uid: douyinUid, douyin_nickname: douyinNickname, douyin_unique_id: douyinUniqueId }, req);
+  return ok({ token, export_deadline: exportDeadline, max_exports: license.max_exports, exports_used: license.exports_used, plan_code: planCode, report_credits: license.report_credits || 0, reports_used: license.reports_used || 0, douyin_uid: douyinUid || null, douyin_nickname: douyinNickname || null, douyin_unique_id: douyinUniqueId || null }, req);
 });
