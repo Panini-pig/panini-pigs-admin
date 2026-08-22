@@ -19,3 +19,6 @@ verify_jwt = true
 
 [functions.current-admin]
 verify_jwt = true
+
+[functions.list-audit-logs]
+verify_jwt = true
