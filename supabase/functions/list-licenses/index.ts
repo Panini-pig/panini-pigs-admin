@@ -25,5 +25,5 @@ Deno.serve(async (req) => {
     .limit(100);
 
   if (error) return fail("database error", 500, req);
-  return ok({ licenses: (data || []).map((row) => ({ ...row, status: effectiveStatus(row) })) }, req);
+  return ok({ licenses: (data || []).map((row) => ({ ...row, stored_status: row.status, status: effectiveStatus(row) })) }, req);
 });

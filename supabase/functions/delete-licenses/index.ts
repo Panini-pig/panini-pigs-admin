@@ -17,10 +17,15 @@ Deno.serve(async (req) => {
   if (!(await verifyAdminPassword(admin, password))) return fail("password verification failed", 403, req);
 
   const supabase = serviceClient();
+  const { data: candidates, error: candidateError } = await supabase
+    .from("license_keys").select("id,status,activated_at").in("id", ids);
+  if (candidateError) return fail("delete failed", 503, req);
+  const eligibleIds = (candidates || []).filter((row) => row.status === "unused" && !row.activated_at).map((row) => row.id);
+  if (eligibleIds.length !== ids.length) return fail("only unused and never-activated licenses can be deleted", 409, req);
   const { data, error } = await supabase
     .from("license_keys")
     .delete()
-    .in("id", ids)
+    .in("id", eligibleIds)
     .select("id");
   if (error) return fail("delete failed", 503, req);
 

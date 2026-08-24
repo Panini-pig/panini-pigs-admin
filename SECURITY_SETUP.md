@@ -33,7 +33,7 @@
 - `bundle` 必须提供抖音 UID 激活，且可分别消耗导出次数与聊天档案额度。
 - 授权码列表只应显示掩码，例如 `DY-****-****-ABCD`。
 - 工作台统计应正常显示今日成交、累计收入与近七日趋势。
-- 批量删除只能删除未激活的激活码。
+- 批量删除只能删除 `status = unused` 且从未激活的个人版测试码；服务端会再次校验。企业订阅永不提供永久删除。
 
 ## 旧明文授权码清理
 
@@ -44,3 +44,13 @@ update public.license_keys set key_plaintext = null where key_plaintext is not n
 ```
 
 此步骤不可逆；执行前请确认旧授权码已通过其他方式妥善记录。
+
+## 企业订阅后台上线顺序
+
+1. 备份当前后台代码和远端函数清单。
+2. 将 `database/010_enterprise_admin_integration.sql` 同步到企业订阅服务迁移目录，先 dry-run、审阅，再由企业订阅服务目录应用。不要 repair 或覆盖远端迁移历史。
+3. 部署 `enterprise-admin-create-code`、`enterprise-admin-list-codes`、`enterprise-admin-manage-code`、`enterprise-admin-stats`、`enterprise-admin-list-logs`。
+4. 验证未登录和非白名单账号均返回 401，再用正常管理员测试创建、续费、暂停、恢复、注销和重置绑定。
+5. 确认企业客户端原有 `enterprise-activate`、`enterprise-validate`、`enterprise-record-usage` 合同未变化后，再发布网页。
+
+企业三张表保持 RLS，网页不得使用 anon key 直接读写；service role key 只保存在 Supabase Secrets。企业日志只允许保存授权及任务元数据，禁止聊天正文、媒体地址、Cookie、手机号等隐私内容。

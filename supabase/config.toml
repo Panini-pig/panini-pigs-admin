@@ -22,3 +22,18 @@ verify_jwt = true
 
 [functions.list-audit-logs]
 verify_jwt = true
+
+[functions.enterprise-admin-create-code]
+verify_jwt = true
+
+[functions.enterprise-admin-list-codes]
+verify_jwt = true
+
+[functions.enterprise-admin-manage-code]
+verify_jwt = true
+
+[functions.enterprise-admin-stats]
+verify_jwt = true
+
+[functions.enterprise-admin-list-logs]
+verify_jwt = true
