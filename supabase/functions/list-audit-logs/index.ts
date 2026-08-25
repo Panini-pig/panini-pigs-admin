@@ -1,7 +1,7 @@
 import { fail, ok, preflight } from "../_shared/cors.ts";
 import { requireAdmin, serviceClient } from "../_shared/supabase.ts";
 
-const visibleActions = ["create_license", "activate_key", "consume_export", "consume_report"];
+const visibleActions = ["create_license", "activate_key", "consume_export", "consume_report", "admin_revoke_license"];
 function parseDetail(value: unknown): Record<string, unknown> { if (!value) return {}; if (typeof value === "object") return value as Record<string, unknown>; try { return JSON.parse(String(value)); } catch { return {}; } }
 
 Deno.serve(async (req) => {
