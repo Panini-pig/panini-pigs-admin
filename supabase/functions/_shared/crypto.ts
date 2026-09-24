@@ -19,10 +19,6 @@ export function generateLicenseKey(): string {
   return `DY-${randomPart(4)}-${randomPart(4)}-${randomPart(4)}`;
 }
 
-export function generateEnterpriseActivationCode(): string {
-  return `DYE-${randomPart(4)}-${randomPart(4)}-${randomPart(4)}-${randomPart(4)}`;
-}
-
 export function generateToken(): string {
   return `${crypto.randomUUID().replaceAll("-", "")}${crypto.randomUUID().replaceAll("-", "")}`;
 }
