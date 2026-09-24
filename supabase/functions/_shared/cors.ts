@@ -27,7 +27,7 @@ export function json(data: unknown, status = 200, req?: Request): Response {
   });
 }
 
-export function ok(data: unknown, req?: Request): Response {
+export function ok(data: Record<string, unknown>, req?: Request): Response {
   return json({ ok: true, ...data }, 200, req);
 }
 

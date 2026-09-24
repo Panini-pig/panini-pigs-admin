@@ -4,4 +4,4 @@
   Referrer-Policy: no-referrer
   X-Frame-Options: DENY
   Permissions-Policy: camera=(), microphone=(), geolocation=()
-  Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://zarulafajzgvxjxebwyt.supabase.co; img-src 'self' data:; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://api.panini-pigs.cn https://zarulafajzgvxjxebwyt.supabase.co; img-src 'self' data:; base-uri 'none'; form-action 'self'; frame-ancestors 'none'

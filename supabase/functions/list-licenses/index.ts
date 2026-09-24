@@ -1,7 +1,16 @@
 import { fail, ok, preflight } from "../_shared/cors.ts";
 import { requireAdmin, serviceClient } from "../_shared/supabase.ts";
 
-function effectiveStatus(row) {
+type LicenseRow = Record<string, unknown> & {
+  status?: string;
+  activated_at?: string | null;
+  exports_used?: number | null;
+  reports_used?: number | null;
+  export_deadline?: string | null;
+  expires_at?: string | null;
+};
+
+function effectiveStatus(row: LicenseRow) {
   const now = new Date();
   if (row.status === "revoked") return "revoked";
   const activated = row.status === "activated" || Boolean(row.activated_at);
